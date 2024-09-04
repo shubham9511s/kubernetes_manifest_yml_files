@@ -131,14 +131,6 @@ data:
       </parse>
     </source>
 
-    <source>
-      @type tail
-      path /var/log/app.log
-      pos_file /var/log/td-agent/app.log.pos
-      tag app.log
-      format none
-    </source>
-
     # Detect exceptions in the log output and forward them as one log entry.
     <match raw.kubernetes.**>
       @id raw.kubernetes
@@ -151,22 +143,6 @@ data:
       max_lines 1000
     </match>
 
-    <match app.log>
-      @type copy
-      <store>
-          # This sends all logs (including those not filtered) to the destination
-      @type forward
-          # Add your configuration here to send logs to the primary destination
-      </store>
-  
-      <store>
-          # This sends only the filtered logs to another destination
-      @type forward
-         # Add your configuration here to send filtered logs to another destination
-      </store>
-    </match>
-
-
     # Concatenate multi-line logs
     <filter **>
       @id filter_concat
@@ -174,16 +150,6 @@ data:
       key message
       multiline_end_regexp /\n$/
       separator ""
-    </filter>
-
-    # This filter will capture only logs with ERROR, WARN, or CRITICAL in the message key.
-
-    <filter app.log>
-      @type grep
-      <regexp>
-      key message
-      pattern /ERROR|WARN|CRITICAL/
-      </regexp>
     </filter>
 
     # Enriches records with Kubernetes metadata
