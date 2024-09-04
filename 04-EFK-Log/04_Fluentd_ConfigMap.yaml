@@ -78,6 +78,40 @@ data:
       </parse>
     </filter>
 
+    # Filter to match error, warning, and critical logs
+    <filter **>
+      @type grep
+      <regexp>
+        key severity
+        pattern ^(error|warning|critical)$
+      </regexp>
+    </filter>
+
+     # Forward matched logs to Elasticsearch
+    <match **>
+      @type elasticsearch
+      @log_level info
+      type_name _doc
+      include_tag_key true
+      host elasticsearch-logging
+      port 9200
+      logstash_format true
+      <buffer>
+        @type file
+        path /var/log/fluentd-buffers/kubernetes.system.buffer
+        flush_mode interval
+        retry_type exponential_backoff
+        flush_thread_count 2
+        flush_interval 5s
+        retry_forever
+        retry_max_interval 30
+        chunk_limit_size 2M
+        queue_limit_length 8
+        overflow_action block
+      </buffer>
+    </match>
+
+
   system.input.conf: |-
     # Example:
     # 2015-12-21 23:17:22,066 [salt.state       ][INFO    ] Completed state [net.ipv4.ip_forward] at time 23:17:22.066081
